@@ -32,12 +32,12 @@ public class JpaMain {
             em.flush();
             em.clear(); //이거 있으면 영속성 컨텍스트에서 안 가져오고 db에서 가져오는 거 볼 수 있음
 
-            Member findMember = em.find(Member.class, member.getId()); //일차캐시에서 가져옴
+            Member findMember = em.find(Member.class, member.getId());
+            List<Member> members = findMember.getTeam().getMembers(); //양방향
 
-            Team findTeam = findMember.getTeam(); //이렇게 바로 찾아쓸 수 있다
-
-            Team newTeam = em.find(Team.class, 100L);
-            findMember.setTeam(newTeam); //fk를 update(연관관계 수정)
+            for(Member m : members) {
+                System.out.println("m = " + m.getUsername());
+            }
 
             tx.commit();
         } catch(Exception e) {
