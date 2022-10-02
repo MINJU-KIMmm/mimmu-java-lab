@@ -1,6 +1,7 @@
 package jpabook.jpashop;
 
 import jpabook.jpashop.domain.Member;
+import jpabook.jpashop.domain.Team;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -18,6 +19,26 @@ public class JpaMain {
         tx.begin();
 
         try{
+            //저장
+            Team team = new Team();
+            team.setName("TeamA");
+            em.persist(team);
+
+            Member member = new Member();
+            member.setUsername("member1");
+            member.setTeam(team);
+            em.persist(member);
+
+            em.flush();
+            em.clear(); //이거 있으면 영속성 컨텍스트에서 안 가져오고 db에서 가져오는 거 볼 수 있음
+
+            Member findMember = em.find(Member.class, member.getId()); //일차캐시에서 가져옴
+
+            Team findTeam = findMember.getTeam(); //이렇게 바로 찾아쓸 수 있다
+
+            Team newTeam = em.find(Team.class, 100L);
+            findMember.setTeam(newTeam); //fk를 update(연관관계 수정)
+
             tx.commit();
         } catch(Exception e) {
             e.printStackTrace();
