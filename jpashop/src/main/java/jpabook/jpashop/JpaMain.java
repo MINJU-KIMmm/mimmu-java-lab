@@ -1,6 +1,8 @@
 package jpabook.jpashop;
 
 import jpabook.jpashop.domain.Member;
+import jpabook.jpashop.domain.Order;
+import jpabook.jpashop.domain.OrderItem;
 import jpabook.jpashop.domain.Team;
 
 import javax.persistence.EntityManager;
@@ -19,25 +21,13 @@ public class JpaMain {
         tx.begin();
 
         try{
-            //저장
-            Team team = new Team();
-            team.setName("TeamA");
-            em.persist(team);
+            Order order = new Order();
+            //order.addOrderItem(new OrderItem());
 
-            Member member = new Member();
-            member.setUsername("member1");
-            member.setTeam(team);
-            em.persist(member);
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
 
-            em.flush();
-            em.clear(); //이거 있으면 영속성 컨텍스트에서 안 가져오고 db에서 가져오는 거 볼 수 있음
-
-            Member findMember = em.find(Member.class, member.getId());
-            List<Member> members = findMember.getTeam().getMembers(); //양방향
-
-            for(Member m : members) {
-                System.out.println("m = " + m.getUsername());
-            }
+            em.persist(orderItem);
 
             tx.commit();
         } catch(Exception e) {
