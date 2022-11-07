@@ -25,3 +25,7 @@ hs_err_pid*
 .idea/
 
 application-secret.properties
+.DS_Store
+.gradle/
+setting.gradle
+.DS_Store
