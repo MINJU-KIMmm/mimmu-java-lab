@@ -1,5 +1,6 @@
 package com.mimmu.mimmuchat.dto;
 
+import com.mimmu.mimmuchat.Entity.ChatUser;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +15,13 @@ public class ChatUserDto {
     private String nickName; // 소셜에서 제공받은 유저명 => 유저 닉네임
     private String passwd; // 유저 패스워드
     private String email; // 소셜에서 제공받은 이메일
-    private String provider; // 소셜 제공자 -> ex) 네이버, 카카오 ----
+
+    public ChatUserDto(ChatUser chatUser) {
+        this.id = chatUser.getId();
+        this.nickName = chatUser.getNickName();
+        this.passwd = chatUser.getPasswd();
+        this.email = chatUser.getEmail();
+    }
 
 //    // Member 엔티티를 ChatUserDto 로 변환 근데 mapper 를 사용하는 순간 필요없다
 //    public static ChatUserDto of(ChatUser chatUserEntity) {

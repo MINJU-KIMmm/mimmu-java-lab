@@ -1,5 +1,6 @@
 package com.mimmu.mimmuchat.dto;
 
+import com.mimmu.mimmuchat.Entity.ChatRoom;
 import com.sun.istack.NotNull;
 import lombok.*;
 import org.springframework.web.socket.WebSocketSession;
@@ -12,7 +13,7 @@ import java.util.Map;
 // 따라서 따로 세션 관리를 하는 코드를 작성할 필도 없고,
 // 메시지를 다른 세션의 클라이언트에게 발송하는 것도 구현 필요가 없다!
 @Data
-@Builder
+
 @EqualsAndHashCode
 @Getter
 @Setter
@@ -33,4 +34,13 @@ public class ChatRoomDto {
     // ChatRoomDto 클래스는 하나로 가되 서비스를 나누었음
     private Map<String, ?> userList;
 
+    public ChatRoomDto(ChatRoom chatRoom) {
+        this.roomId = chatRoom.getUuid();
+        this.roomName = chatRoom.getRoomName();
+        this.userCount = chatRoom.getUserCount();
+        this.maxUserCnt = chatRoom.getMaxUserCount();
+        this.roomPwd = chatRoom.getRoomPwd();
+        this.secretChk = chatRoom.getSecretChk();
+        this.chatType = ChatType.MSG;
+    }
 }
