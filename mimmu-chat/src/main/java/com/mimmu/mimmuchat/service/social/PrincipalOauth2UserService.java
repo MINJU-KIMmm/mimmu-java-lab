@@ -50,7 +50,6 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
         ChatUserDto user = ChatUserDto.builder()
                 .nickName(login.getNickName())
                 .email(login.getEmail())
-                .provider(login.getProvider())
                 .build();
 
         // 다시 한번!! 왜 return new PrincipalDetails 가 가능한가?
