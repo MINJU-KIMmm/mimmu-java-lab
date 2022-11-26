@@ -1,4 +1,6 @@
 package com.mimmu.mimmuchat.controller;
+import com.mimmu.mimmuchat.Entity.ChatUser;
+import com.mimmu.mimmuchat.dto.ChatUserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -18,6 +20,7 @@ import com.mimmu.mimmuchat.service.ChatService.MsgChatService;
 import com.mimmu.mimmuchat.dto.ChatDTO;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 @Slf4j
@@ -42,10 +45,10 @@ public class ChatController {
         chatServiceMain.plusUserCnt(chat.getRoomId());
 
         // 채팅방에 유저 추가 및 UserUUID 반환
-        String userUUID = msgChatService.addUser(ChatRoomMap.getInstance().getChatRooms(), chat.getRoomId(), chat.getSender());
+        String email = msgChatService.addUser(chat.getRoomId(), chat.getSender());
 
         // 반환 결과를 socket session 에 userUUID 로 저장
-        headerAccessor.getSessionAttributes().put("userUUID", userUUID);
+        headerAccessor.getSessionAttributes().put("userUUID", email);
         headerAccessor.getSessionAttributes().put("roomId", chat.getRoomId());
 
         chat.setMessage(chat.getSender() + " 님 입장!!");
@@ -59,6 +62,7 @@ public class ChatController {
     public void sendMessage(@Payload ChatDTO chat) {
         log.info("CHAT {}", chat);
         chat.setMessage(chat.getMessage());
+        msgChatService.sendMessage(chat);
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
 
     }
@@ -80,8 +84,8 @@ public class ChatController {
         chatServiceMain.minusUserCnt(roomId);
 
         // 채팅방 유저 리스트에서 UUID 유저 닉네임 조회 및 리스트에서 유저 삭제
-        String username = msgChatService.findUserNameByRoomIdAndUserUUID(ChatRoomMap.getInstance().getChatRooms(), roomId, userUUID);
-        msgChatService.delUser(ChatRoomMap.getInstance().getChatRooms(), roomId, userUUID);
+        String username = msgChatService.findUserNameByRoomIdAndUserUUID(roomId, userUUID);
+        msgChatService.delUser(roomId, userUUID);
 
         if (username != null) {
             log.info("User Disconnected : " + username);
@@ -101,8 +105,14 @@ public class ChatController {
     @GetMapping("/chat/userlist")
     @ResponseBody
     public ArrayList<String> userList(String roomId) {
+        ArrayList<String> userList = new ArrayList<>();
+        List<ChatUserDto> users = msgChatService.getUserList(roomId);
 
-        return msgChatService.getUserList(ChatRoomMap.getInstance().getChatRooms(), roomId);
+        for(ChatUserDto chatUserDto : users) {
+            userList.add(chatUserDto.getNickName());
+        }
+
+        return userList;
     }
 
     // 채팅에 참여한 유저 닉네임 중복 확인
@@ -111,7 +121,7 @@ public class ChatController {
     public String isDuplicateName(@RequestParam("roomId") String roomId, @RequestParam("username") String username) {
 
         // 유저 이름 확인
-        String userName = msgChatService.isDuplicateName(ChatRoomMap.getInstance().getChatRooms(), roomId, username);
+        String userName = msgChatService.isDuplicateName(roomId, username);
         log.info("동작확인 {}", userName);
 
         return userName;
