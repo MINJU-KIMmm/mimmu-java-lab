@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Builder
 public class ChatUser {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "nickname")
