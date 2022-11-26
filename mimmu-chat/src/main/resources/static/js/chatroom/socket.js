@@ -61,7 +61,7 @@ function onConnected() {
         {},
         JSON.stringify({
             "roomId": roomId,
-            sender: username,
+            sender: username, //이메일로 바꿔야 하는데
             type: 'ENTER'
         })
     )
