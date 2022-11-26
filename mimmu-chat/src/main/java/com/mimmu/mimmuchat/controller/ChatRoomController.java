@@ -1,4 +1,6 @@
 package com.mimmu.mimmuchat.controller;
+import com.mimmu.mimmuchat.Entity.ChatRoom;
+import com.mimmu.mimmuchat.Entity.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -50,28 +52,19 @@ public class ChatRoomController {
     // 파라미터로 넘어오는 roomId 를 확인후 해당 roomId 를 기준으로
     // 채팅방을 찾아서 클라이언트를 chatroom 으로 보낸다.
     @GetMapping("/chat/room")
-    public String roomDetail(Model model, String roomId, @AuthenticationPrincipal PrincipalDetails principalDetails){
+    public String roomDetail(Model model, String roomId){
 
         log.info("roomId {}", roomId);
 
         // principalDetails 가 null 이 아니라면 로그인 된 상태!!
-        if (principalDetails != null) {
-            // 세션에서 로그인 유저 정보를 가져옴
-            model.addAttribute("user", principalDetails.getUser());
-        }
 
-        ChatRoomDto room = ChatRoomMap.getInstance().getChatRooms().get(roomId);
 
+        ChatRoomDto room = chatServiceMain.findRoomById(roomId);
         model.addAttribute("room", room);
 
+        System.out.println(room.getChatType());
+        return "chatroom";
 
-        if (ChatRoomDto.ChatType.MSG.equals(room.getChatType())) {
-            return "chatroom";
-        }else{
-            model.addAttribute("uuid", UUID.randomUUID().toString());
-
-            return "rtcroom";
-        }
     }
 
     // 채팅방 비밀번호 확인
