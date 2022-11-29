@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Table(name = "ROOM_USER")
 @Entity
@@ -24,6 +25,9 @@ public class RoomUser {
     @JoinColumn(name = "user_id")
     private ChatUser chatUser;
 
+    @Column(name = "enter_time")
+    private LocalDateTime enterTime;
+
     @Builder
     public RoomUser(Long id, ChatRoom chatRoom, ChatUser chatUser) {
         this.id = id;
@@ -31,4 +35,8 @@ public class RoomUser {
         this.chatUser = chatUser;
     }
 
+    @PrePersist
+    public void enterTime() {
+        this.enterTime = LocalDateTime.now();
+    }
 }

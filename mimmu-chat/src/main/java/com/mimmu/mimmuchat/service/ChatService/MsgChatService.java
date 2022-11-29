@@ -1,15 +1,13 @@
 package com.mimmu.mimmuchat.service.ChatService;
 import com.mimmu.mimmuchat.Entity.*;
-import com.mimmu.mimmuchat.dto.ChatDTO;
-import com.mimmu.mimmuchat.dto.ChatUserDto;
+import com.mimmu.mimmuchat.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import com.mimmu.mimmuchat.dto.ChatRoomDto;
-import com.mimmu.mimmuchat.dto.ChatRoomMap;
 import org.springframework.transaction.annotation.Transactional;
 //import com.mimmu.mimmuchat.service.fileService.FileService;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,15 +60,11 @@ public class MsgChatService {
 
 
     // 채팅방 유저 리스트에 유저 추가
-    public String addUser(String roomId, String userName){
+    public String addUser(String roomId, String email){
         ChatRoom chatRoom = chatRoomRepository.findChatRoomByUuid(roomId);
-        ChatUser chatUser = ChatUser.builder()
-                .email(userName+"@test.com")
-                .nickName(userName)
-                .passwd("1234")
-                .build();
+        ChatUser chatUser = chatUserRepository.findChatUserByEmail(email);
 
-        chatUserRepository.save(chatUser);
+        //chatUserRepository.save(chatUser);
         // 아이디 중복 확인 후 userList 에 추가
         //room.getUserList().put(userUUID, userName);
 
@@ -81,10 +75,11 @@ public class MsgChatService {
                 .chatUser(chatUser)
                 .chatRoom(chatRoom)
                 .build();
+        if(!roomUserRepository.existsByChatRoom_UuidAndAndChatUser_Email(roomId, email)) {
+            roomUserRepository.save(roomUser);
+        }
 
-        roomUserRepository.save(roomUser);
-
-        return userName;
+        return email;
     }
 
     // 채팅방 유저 이름 중복 확인
@@ -111,7 +106,7 @@ public class MsgChatService {
 
     // 채팅방 전체 userlist 조회
     public List<ChatUserDto> getUserList(String roomId){
-
+        System.out.println(roomId);
         List<RoomUser> roomUsers = roomUserRepository.findAllByChatRoom_Uuid(roomId);
         List<ChatUser> chatUsers = new ArrayList<>();
         for(RoomUser roomUser:roomUsers) {
@@ -133,13 +128,24 @@ public class MsgChatService {
     @Transactional(rollbackFor = Exception.class)
     public void sendMessage(ChatDTO chatDTO) {
         Message message = Message.builder()
-                .sender(chatUserRepository.findChatUserByEmail(chatDTO.getSender()+"@test.com" +
-                        ""))
+                .sender(chatUserRepository.findChatUserByEmail(chatDTO.getSender()))
                 .chatRoom(chatRoomRepository.findChatRoomByUuid(chatDTO.getRoomId()))
                 .message(chatDTO.getMessage())
                 .build();
 
         messageRepository.save(message);
+    }
+
+    public List<MessageDto> getHistoryMessage(String roomId, String email) {
+        ChatRoom chatRoom = chatRoomRepository.findChatRoomByUuid(roomId);
+        ChatUser chatUser = chatUserRepository.findChatUserByEmail(email);
+        RoomUser roomUser = roomUserRepository.findByChatRoomAndChatUser(chatRoom, chatUser);
+        LocalDateTime enterTime = roomUser.getEnterTime();
+
+        return messageRepository.findAllByChatRoomAndSenderAndSendtimeIsAfter(chatRoom, chatUser, enterTime)
+                .stream()
+                .map(message -> new MessageDto(message))
+                .collect(Collectors.toList());
     }
 
 }
