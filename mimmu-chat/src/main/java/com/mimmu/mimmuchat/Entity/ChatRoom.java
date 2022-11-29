@@ -25,8 +25,6 @@ public class ChatRoom {
     @Column(name = "secret_chk")
     private Boolean secretChk;
 
-    @Column(name = "max_user_chk", length = 45)
-    private String maxUserChk;
 
     @Column(name = "chat_type", length = 45)
     private String chatType;
@@ -41,12 +39,11 @@ public class ChatRoom {
     private String roomName;
 
     @Builder
-    public ChatRoom(Long id, String uuid, String roomPwd, Boolean secretChk, String maxUserChk, String chatType, Integer maxUserCount, String roomName, Integer userCount) {
+    public ChatRoom(Long id, String uuid, String roomPwd, Boolean secretChk, String chatType, Integer maxUserCount, String roomName, Integer userCount) {
         this.id = id;
         this.uuid = uuid;
         this.roomPwd = roomPwd;
         this.secretChk = secretChk;
-        this.maxUserChk = maxUserChk;
         this.chatType = chatType;
         this.maxUserCount = maxUserCount;
         this.userCount = userCount;
