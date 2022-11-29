@@ -1,8 +1,12 @@
 package com.mimmu.mimmuchat.controller;
 import com.mimmu.mimmuchat.Entity.ChatRoom;
 import com.mimmu.mimmuchat.Entity.ChatRoomRepository;
+import com.mimmu.mimmuchat.Entity.ChatUser;
+import com.mimmu.mimmuchat.dto.MessageDto;
+import com.mimmu.mimmuchat.service.ChatService.MsgChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +17,7 @@ import com.mimmu.mimmuchat.service.ChatService.ChatServiceMain;
 import com.mimmu.mimmuchat.dto.ChatRoomDto;
 import com.mimmu.mimmuchat.service.social.PrincipalDetails;
 
+import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -22,6 +27,7 @@ public class ChatRoomController {
 
     // ChatService Bean 가져오기
     private final ChatServiceMain chatServiceMain;
+    private final MsgChatService msgChatService;
 
     // 채팅방 생성
     // 채팅방 생성 후 다시 / 로 return
@@ -31,7 +37,7 @@ public class ChatRoomController {
                              @RequestParam("secretChk") String secretChk,
                              @RequestParam(value = "maxUserCnt", defaultValue = "2") String maxUserCnt,
                              @RequestParam("chatType") String chatType,
-                             RedirectAttributes rttr) {
+                             RedirectAttributes rttr, @AuthenticationPrincipal ChatUser chatUser) {
 
         // log.info("chk {}", secretChk);
 
@@ -45,6 +51,11 @@ public class ChatRoomController {
 
         rttr.addFlashAttribute("roomName", room);
         System.out.println(name);
+
+        chatServiceMain.plusUserCnt(room.getRoomId());
+
+        // 채팅방에 유저 추가 및 UserUUID 반환
+        String email = msgChatService.addUser(room.getRoomId(), chatUser.getEmail());
         return "redirect:/";
     }
 
@@ -52,12 +63,15 @@ public class ChatRoomController {
     // 파라미터로 넘어오는 roomId 를 확인후 해당 roomId 를 기준으로
     // 채팅방을 찾아서 클라이언트를 chatroom 으로 보낸다.
     @GetMapping("/chat/room")
-    public String roomDetail(Model model, String roomId){
+    public String roomDetail(Model model, String roomId, @AuthenticationPrincipal ChatUser chatUser){
 
         log.info("roomId {}", roomId);
 
         // principalDetails 가 null 이 아니라면 로그인 된 상태!!
-
+        if (chatUser != null) {
+            // 세션에서 로그인 유저 정보를 가져옴
+            model.addAttribute("user", chatUser.getEmail());
+        }
 
         ChatRoomDto room = chatServiceMain.findRoomById(roomId);
         model.addAttribute("room", room);
