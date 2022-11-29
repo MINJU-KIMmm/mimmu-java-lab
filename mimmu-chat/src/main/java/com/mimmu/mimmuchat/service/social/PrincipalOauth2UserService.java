@@ -30,21 +30,21 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
 
     private OAuth2User oAuth2UserLogin(OAuth2UserRequest userRequest, OAuth2User oAuth2User){
         // Attribute 를 파싱해서 공통 객체로 묶기!! => 소셜 로그인 마다 다른 정보가 들어옴으로 쉽게 관리하기 위해서
-        SocialLogin login = null;
+//        SocialLogin login = null;
 
         // provider 정보 확인 => 어떤 SNS 로 로그인했는지 확인
-        String provider = userRequest.getClientRegistration().getRegistrationId();
+//        String provider = userRequest.getClientRegistration().getRegistrationId();
 
 
-        if ("kakao".equals(provider)) {
-            // 카카오 로그인인 경우 KaKaoLogin 클래스에 소셜 로그인 정보가 담긴
+//        if ("kakao".equals(provider)) {
+//            // 카카오 로그인인 경우 KaKaoLogin 클래스에 소셜 로그인 정보가 담긴
             // oAuth2User.getAttributes() 를 보내주고 정보를 담는다
-            login = new KaKaoLogin(oAuth2User.getAttributes());
-        } else if ("naver".equals(provider)) {
-            // 네이버 로그인인 경우 NaverLogin 클래스를 소셜 로그인 정보가 담긴
-            // oAuth2User.getAttributes() 를 보내주고 정보를 담는다
-            login = new NaverLogin(oAuth2User.getAttributes());
-        }
+        SocialLogin login = new KaKaoLogin(oAuth2User.getAttributes());
+//        } else if ("naver".equals(provider)) {
+//            // 네이버 로그인인 경우 NaverLogin 클래스를 소셜 로그인 정보가 담긴
+//            // oAuth2User.getAttributes() 를 보내주고 정보를 담는다
+//            login = new NaverLogin(oAuth2User.getAttributes());
+//        }
 
         // ChatUser 에 소셜 로그인 후 받아서 나눠진 정보를 담는다
         ChatUserDto user = ChatUserDto.builder()

@@ -1,11 +1,11 @@
 package com.mimmu.mimmuchat.service.ChatService;
 
-import com.mimmu.mimmuchat.Entity.ChatRoom;
-import com.mimmu.mimmuchat.Entity.ChatRoomRepository;
+import com.mimmu.mimmuchat.Entity.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import com.mimmu.mimmuchat.dto.ChatRoomDto;
 import com.mimmu.mimmuchat.dto.ChatRoomMap;
@@ -24,6 +24,7 @@ public class ChatServiceMain {
 
     private final MsgChatService msgChatService;
     private final ChatRoomRepository chatRoomRepository;
+    private final RoomUserRepository roomUserRepository;
 
     // 전체 채팅방 조회
     public List<ChatRoomDto> findAllRoom(){
@@ -38,6 +39,21 @@ public class ChatServiceMain {
         return chatRooms;
     }
 
+    //내 전체 채팅방
+    public List<ChatRoomDto> findAllMyRoom(String email) {
+        List<RoomUser> roomUsers = roomUserRepository.findAllByChatUser_Email(email);
+        List<ChatRoomDto> chatRooms = new ArrayList<>();
+        for(RoomUser roomUser:roomUsers) {
+            ChatRoom chatRoom = roomUser.getChatRoom();
+            ChatRoomDto chatRoomDto = new ChatRoomDto(chatRoom);
+            chatRooms.add(chatRoomDto);
+        }
+        return chatRooms;
+    }
+
+    public Boolean alreadyEnteredRoom(String roomId, String email) {
+        return roomUserRepository.existsByChatRoom_UuidAndAndChatUser_Email(roomId, email);
+    }
     // roomID 기준으로 채팅방 찾기
     public ChatRoomDto findRoomById(String roomId){
         ChatRoom chatRoom = chatRoomRepository.findChatRoomByUuid(roomId);
@@ -128,5 +144,7 @@ public class ChatServiceMain {
         }
 
     }
+
+
 
 }

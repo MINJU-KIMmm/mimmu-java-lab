@@ -26,10 +26,6 @@ public class Message{
     @JoinColumn(name = "sender")
     private ChatUser sender;
 
-//    @ManyToOne
-//    @JoinColumn(name = "receiver")
-//    private ChatUser receiver;
-//
     @Column(nullable = false)
     private String message;
 

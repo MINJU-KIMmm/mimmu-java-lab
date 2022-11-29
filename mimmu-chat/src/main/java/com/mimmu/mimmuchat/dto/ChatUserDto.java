@@ -1,13 +1,11 @@
 package com.mimmu.mimmuchat.dto;
 
 import com.mimmu.mimmuchat.Entity.ChatUser;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Builder
 @Data
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatUserDto {
@@ -19,9 +17,11 @@ public class ChatUserDto {
     public ChatUserDto(ChatUser chatUser) {
         this.id = chatUser.getId();
         this.nickName = chatUser.getNickName();
-        this.passwd = chatUser.getPasswd();
+        this.passwd = chatUser.getPassword();
         this.email = chatUser.getEmail();
     }
+
+
 
 //    // Member 엔티티를 ChatUserDto 로 변환 근데 mapper 를 사용하는 순간 필요없다
 //    public static ChatUserDto of(ChatUser chatUserEntity) {
@@ -34,4 +34,6 @@ public class ChatUserDto {
 //
 //        return chatUserDto;
 //    }
+
+
 }
