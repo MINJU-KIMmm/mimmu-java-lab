@@ -1,6 +1,7 @@
 package com.mimmu.mimmuchat.controller;
 import com.mimmu.mimmuchat.Entity.ChatUser;
 import com.mimmu.mimmuchat.dto.ChatUserDto;
+import com.mimmu.mimmuchat.dto.MessageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -9,6 +10,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -19,6 +21,7 @@ import com.mimmu.mimmuchat.service.ChatService.ChatServiceMain;
 import com.mimmu.mimmuchat.service.ChatService.MsgChatService;
 import com.mimmu.mimmuchat.dto.ChatDTO;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,19 +42,22 @@ public class ChatController {
     // 이때 클라이언트에서는 /pub/chat/message 로 요청하게 되고 이것을 controller 가 받아서 처리한다.
     // 처리가 완료되면 /sub/chat/room/roomId 로 메시지가 전송된다.
     @MessageMapping("/chat/enterUser")
-    public void enterUser(@Payload ChatDTO chat, SimpMessageHeaderAccessor headerAccessor) {
+    public void enterUser(@Payload ChatDTO chat, SimpMessageHeaderAccessor headerAccessor, Principal chatUser) {
+        System.out.println("흠" + chatUser.getName());
+        System.out.println(chat.getType());
 
-        // 채팅방 유저+1
-        chatServiceMain.plusUserCnt(chat.getRoomId());
+        if (!chatServiceMain.alreadyEnteredRoom(chat.getRoomId(), chatUser.getName())) {
+            chatServiceMain.plusUserCnt(chat.getRoomId());
+            // 채팅방에 유저 추가 및 UserUUID 반환
+            String email = msgChatService.addUser(chat.getRoomId(), chat.getSender());
 
-        // 채팅방에 유저 추가 및 UserUUID 반환
-        String email = msgChatService.addUser(chat.getRoomId(), chat.getSender());
+            // 반환 결과를 socket session 에 userUUID 로 저장
+            headerAccessor.getSessionAttributes().put("userUUID", email);
+            headerAccessor.getSessionAttributes().put("roomId", chat.getRoomId());
 
-        // 반환 결과를 socket session 에 userUUID 로 저장
-        headerAccessor.getSessionAttributes().put("userUUID", email);
-        headerAccessor.getSessionAttributes().put("roomId", chat.getRoomId());
+            chat.setMessage(chat.getSender() + " 님 입장!!");
 
-        chat.setMessage(chat.getSender() + " 님 입장!!");
+        }
 
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
 
@@ -59,12 +65,31 @@ public class ChatController {
 
     // 해당 유저
     @MessageMapping("/chat/sendMessage")
-    public void sendMessage(@Payload ChatDTO chat) {
+    public void sendMessage(@Payload ChatDTO chat, Principal principal) {
         log.info("CHAT {}", chat);
+        System.out.println(principal.getName());
         chat.setMessage(chat.getMessage());
+        chat.setSender(principal.getName());
         msgChatService.sendMessage(chat);
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
+    }
 
+    @GetMapping("/chat/history")
+    public List<MessageDto> historyChat(String roomId, Principal chatUser) {
+        if(chatServiceMain.alreadyEnteredRoom(roomId, chatUser.getName())) {
+            System.out.println("Heelo");
+
+            return msgChatService.getHistoryMessage(roomId, chatUser.getName());
+        }
+        else {
+            System.out.println("히스토리 없음");
+        }
+//
+//        for(MessageDto msg : msgList) {
+//            System.out.println(msg.getMessage());
+//        }
+
+        return null;
     }
 
     // 유저 퇴장 시에는 EventListener 을 통해서 유저 퇴장을 확인
@@ -81,24 +106,24 @@ public class ChatController {
         log.info("headAccessor {}", headerAccessor);
 
         // 채팅방 유저 -1
-        chatServiceMain.minusUserCnt(roomId);
+//        chatServiceMain.minusUserCnt(roomId);
+//
+//        // 채팅방 유저 리스트에서 UUID 유저 닉네임 조회 및 리스트에서 유저 삭제
+//        String username = msgChatService.findUserNameByRoomIdAndUserUUID(roomId, userUUID);
+//        msgChatService.delUser(roomId, userUUID);
 
-        // 채팅방 유저 리스트에서 UUID 유저 닉네임 조회 및 리스트에서 유저 삭제
-        String username = msgChatService.findUserNameByRoomIdAndUserUUID(roomId, userUUID);
-        msgChatService.delUser(roomId, userUUID);
-
-        if (username != null) {
-            log.info("User Disconnected : " + username);
-
-            // builder 어노테이션 활용
-            ChatDTO chat = ChatDTO.builder()
-                    .type(ChatDTO.MessageType.LEAVE)
-                    .sender(username)
-                    .message(username + " 님 퇴장!!")
-                    .build();
-
-            template.convertAndSend("/sub/chat/room/" + roomId, chat);
-        }
+//        if (username != null) {
+//            log.info("User Disconnected : " + username);
+//
+//            // builder 어노테이션 활용
+//            ChatDTO chat = ChatDTO.builder()
+//                    .type(ChatDTO.MessageType.LEAVE)
+//                    .sender(username)
+//                    .message(username + " 님 퇴장!!")
+//                    .build();
+//
+//            template.convertAndSend("/sub/chat/room/" + roomId, chat);
+//        }
     }
 
     // 채팅에 참여한 유저 리스트 반환
