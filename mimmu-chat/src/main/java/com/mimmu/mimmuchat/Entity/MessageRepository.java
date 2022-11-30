@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    public List<Message> findAllByChatRoomAndSenderAndSendtimeIsAfter(ChatRoom chatRoom, ChatUser sender, LocalDateTime enterTime);
+    public List<Message> findAllByChatRoomAndSendtimeIsAfter(ChatRoom chatRoom, LocalDateTime enterTime);
 }
