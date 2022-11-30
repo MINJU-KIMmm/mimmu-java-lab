@@ -49,4 +49,26 @@ public class MainController {
         return "roomlist";
     }
 
+    @GetMapping("/all-chat")
+    public String goAllChatRoom(Model model, @AuthenticationPrincipal ChatUser chatUser){
+//        System.out.println(chatUser.getEmail());
+
+        //System.out.println(chatUser.getEmail());
+        if(chatUser == null) {
+            System.out.println("is Null");
+        }
+        // principalDetails 가 null 이 아니라면 로그인 된 상태!!
+        if (chatUser != null) {
+            // 세션에서 로그인 유저 정보를 가져옴
+            model.addAttribute("list", chatServiceMain.findAllRoom());
+
+            model.addAttribute("user", chatUser.getEmail());
+            log.debug("user [{}] ", chatUser.getEmail());
+            log.debug("SHOW ALL ChatList {}", chatServiceMain.findAllRoom());
+
+        }
+
+//        model.addAttribute("user", "hey");
+        return "allroomlist";
+    }
 }

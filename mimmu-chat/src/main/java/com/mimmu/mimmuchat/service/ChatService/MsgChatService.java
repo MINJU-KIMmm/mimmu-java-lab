@@ -142,7 +142,7 @@ public class MsgChatService {
         RoomUser roomUser = roomUserRepository.findByChatRoomAndChatUser(chatRoom, chatUser);
         LocalDateTime enterTime = roomUser.getEnterTime();
 
-        return messageRepository.findAllByChatRoomAndSenderAndSendtimeIsAfter(chatRoom, chatUser, enterTime)
+        return messageRepository.findAllByChatRoomAndSendtimeIsAfter(chatRoom, enterTime)
                 .stream()
                 .map(message -> new MessageDto(message))
                 .collect(Collectors.toList());

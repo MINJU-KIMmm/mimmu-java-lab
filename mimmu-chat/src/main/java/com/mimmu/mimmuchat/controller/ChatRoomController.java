@@ -17,6 +17,7 @@ import com.mimmu.mimmuchat.service.ChatService.ChatServiceMain;
 import com.mimmu.mimmuchat.dto.ChatRoomDto;
 import com.mimmu.mimmuchat.service.social.PrincipalDetails;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -104,8 +105,8 @@ public class ChatRoomController {
     // 유저 카운트
     @GetMapping("/chat/chkUserCnt/{roomId}")
     @ResponseBody
-    public boolean chUserCnt(@PathVariable String roomId){
+    public boolean chUserCnt(@PathVariable String roomId, Principal chatUser){
 
-        return chatServiceMain.chkRoomUserCnt(roomId);
+        return chatServiceMain.chkRoomUserCnt(roomId, chatUser.getName());
     }
 }

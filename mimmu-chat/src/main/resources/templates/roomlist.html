@@ -264,6 +264,21 @@
         span.input-group-text.input-password-show {
             height: 40px;
         }
+        #configRoomBtn {
+            background-color: #006600;
+        }
+        #configRoom {
+            background-color: #006600;
+        }
+        .btn {
+            background-color: #006600;
+        }
+        .btn btn-info {
+            background-color: #006600;
+        }
+        a {
+            color:#006600;
+        }
 
     </style>
 </head>
@@ -275,11 +290,13 @@
         <div th:unless="${#authorization.expr('isAuthenticated()')}" class="row">
             <div class="col">
                 <a href="/login"><button type="button" class="btn btn-primary">로그인하기</button></a>
+                <a href="/signup"><button type="button" class="btn btn-primary">회원가입</button></a>
             </div>
         </div>
         <div th:if="${#authorization.expr('isAuthenticated()')}">
             <h5>[[${#authentication.name}]]</h5>
             <a href="/logout"><button type="button" class="btn btn-primary">로그아웃</button> </a>
+            <a href="/all-chat"><button type="button" class="btn btn-primary">전체 채팅방</button> </a>
         </div>
 
         <table class="table table-hover" id="table">
@@ -307,14 +324,14 @@
                         </span>
                     </td>
                     <td>
-                        <span class="badge bg-primary rounded-pill">[[${room.userCount}]]/[[${room.maxUserCnt}]]</span>
+                        <span id="memberCnt" class="badge bg-success rounded-pill">[[${room.userCount}]]/[[${room.maxUserCnt}]]</span>
                     </td>
                     <td>
                         <span th:if="${#strings.equals(room.chatType, 'MSG')}">일반 채팅</span>
                         <span th:unless="${#strings.equals(room.chatType, 'MSG')}">화상 채팅</span>
                     </td>
                     <td>
-                        <button class="btn btn-primary btn-sm" id="configRoom" data-bs-toggle="modal" data-bs-target="#confirmPwdModal" th:data-id="${room.roomId}">채팅방 설정</button>
+                        <button class="btn btn-primary btn-sm" id="configRoom" data-bs-toggle="modal" data-bs-target="#confirmPwdModal" th:data-id="${room.roomId}"><span style="color:white">채팅방 설정</span></button>
                     </td>
                 </tr>
             </th:block>
