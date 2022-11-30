@@ -100,6 +100,7 @@ public class ChatServiceMain {
         ChatRoom chatRoom = chatRoomRepository.findChatRoomByUuid(roomId);
 
         chatRoom.increaseUser();
+        chatRoomRepository.save(chatRoom);
     }
 
     // 채팅방 인원-1
@@ -113,9 +114,13 @@ public class ChatServiceMain {
     }
 
     // maxUserCnt 에 따른 채팅방 입장 여부
-    public boolean chkRoomUserCnt(String roomId){
-        ChatRoom chatRoom = chatRoomRepository.findChatRoomByUuid(roomId);
+    public boolean chkRoomUserCnt(String roomId, String email){
+        if(alreadyEnteredRoom(roomId, email)) {
+            System.out.println("chk true");
+            return true;
+        }
 
+        ChatRoom chatRoom = chatRoomRepository.findChatRoomByUuid(roomId);
 
         if (chatRoom.getUserCount() + 1 > chatRoom.getMaxUserCount()) {
             return false;
