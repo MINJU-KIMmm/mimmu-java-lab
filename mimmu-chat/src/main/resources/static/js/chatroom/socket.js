@@ -19,13 +19,14 @@ var stompClient = null;
 var username = null;
 
 var colors = [
-    '#2196F3', '#32c787', '#00BCD4', '#ff5652',
+    '#006600', '#32c787', '#00BCD4', '#ff5652',
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
 ];
 
 // roomId 파라미터 가져오기
 const url = new URL(location.href).searchParams;
 const roomId = url.get('roomId');
+const userList = []
 
 function connect(event) {
     username = document.querySelector('#name').value.trim();
@@ -37,6 +38,8 @@ function connect(event) {
     // chatPage 를 등장시킴
     usernamePage.classList.add('hidden');
     chatPage.classList.remove('hidden');
+
+    getHistory();
 
     // 연결하고자하는 Socket 의 endPoint
     var socket = new SockJS('/ws-stomp');
@@ -61,7 +64,7 @@ function onConnected() {
         {},
         JSON.stringify({
             "roomId": roomId,
-            sender: username, //이메일로 바꿔야 하는데
+            sender: username,
             type: 'ENTER'
         })
     )
@@ -104,13 +107,57 @@ function getUserList() {
             var users = "";
             for (let i = 0; i < data.length; i++) {
                 //console.log("data[i] : "+data[i]);
-                users += "<li class='dropdown-item'>" + data[i] + "</li>"
+                users += "<li class='dropdown-item'>" + data[i] + "</li>";
+                userList[userList.length] = data[i];
             }
             $list.html(users);
         }
     })
 }
 
+function getHistory() {
+    //const $msgArea = $("#messageArea");
+    $.ajax({
+        type: "GET",
+        url: "/chat/history",
+        data: {
+            "roomId": roomId
+        },
+        success: function(data) {
+            for(let i = 0 ; i < data.length ; i++) {
+                var messageElement = document.createElement('li');
+                messageElement.classList.add('chat-message');
+
+                var avatarElement = document.createElement('i');
+                var avatarText = document.createTextNode(data[i].sender[0]);
+                avatarElement.appendChild(avatarText);
+                avatarElement.style['background-color'] = getAvatarColor(data[i].sender);
+
+                messageElement.appendChild(avatarElement);
+
+                var usernameElement = document.createElement('span');
+                var usernameText = document.createTextNode(data[i].sender);
+                usernameElement.appendChild(usernameText);
+                messageElement.appendChild(usernameElement);
+
+                var contentElement = document.createElement('p');
+
+                var messageText = document.createTextNode(data[i].message);
+                contentElement.appendChild(messageText);
+
+                messageElement.appendChild(contentElement);
+
+                messageArea.appendChild(messageElement);
+                messageArea.scrollTop = messageArea.scrollHeight;
+            }
+            // var msgs = "";
+            // for(let i = 0; i < data.length; i++) {
+            //     msgs += "<li class='history'>" + data[i].message + "</li>"
+            // }
+            // $msgArea.html(msgs);
+        }
+    })
+}
 
 function onError(error) {
     connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
@@ -189,26 +236,39 @@ function onMessageReceived(payload) {
         contentElement.appendChild(imgElement);
         contentElement.appendChild(downBtnElement);
 
+        messageElement.appendChild(contentElement);
+
+        messageArea.appendChild(messageElement);
+        messageArea.scrollTop = messageArea.scrollHeight;
+
     }else{
         // 만약 s3DataUrl 의 값이 null 이라면
         // 이전에 넘어온 채팅 내용 보여주기기
        var messageText = document.createTextNode(chat.message);
-        contentElement.appendChild(messageText);
+       if(chat.message!=null){
+           contentElement.appendChild(messageText);
+           messageElement.appendChild(contentElement);
+
+           messageArea.appendChild(messageElement);
+           messageArea.scrollTop = messageArea.scrollHeight;
+       }
     }
 
-    messageElement.appendChild(contentElement);
 
-    messageArea.appendChild(messageElement);
-    messageArea.scrollTop = messageArea.scrollHeight;
 }
 
 
 function getAvatarColor(messageSender) {
     var hash = 0;
-    for (var i = 0; i < messageSender.length; i++) {
-        hash = 31 * hash + messageSender.charCodeAt(i);
+    for (var i = 0; i < userList.length; i++) {
+        if(userList[i] == messageSender) {
+            hash = 31 * hash + messageSender.charCodeAt(i);
+        }
+
     }
 
+    console.log(messageSender)
+    console.log("색")
     var index = Math.abs(hash % colors.length);
     return colors[index];
 }
