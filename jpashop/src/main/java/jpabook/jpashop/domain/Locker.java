@@ -3,7 +3,7 @@ package jpabook.jpashop.domain;
 import javax.persistence.*;
 
 @Entity
-public class Locker {
+public class Locker  extends BaseEntity {
 
     @Id @GeneratedValue
     private Long id;
