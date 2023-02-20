@@ -15,16 +15,8 @@ public class Member {
     @Column(name = "USERNAME")
     private String username;
 
-    @ManyToOne
-    @JoinColumn(name = "TEAM_ID")
-    private Team team;
-
-    @OneToMany(mappedBy = "member")
-    private List<Order> orders = new ArrayList<>(); //양방향
-
-    @OneToOne
-    @JoinColumn(name = "LOCKER_ID")
-    private Locker locker;
+    @Embedded
+    private Address address;
 
     public Long getId() {
         return id;
@@ -32,6 +24,14 @@ public class Member {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
     }
 
     public String getUsername() {
@@ -42,11 +42,4 @@ public class Member {
         this.username = username;
     }
 
-    public Team getTeam() {
-        return team;
-    }
-
-    public void setTeam(Team team) {
-        this.team = team;
-    }
 }
