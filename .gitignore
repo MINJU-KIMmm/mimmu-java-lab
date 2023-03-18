@@ -42,3 +42,5 @@ ecommerce/pom.xml
 ecommerce/.mvn/wrapper/maven-wrapper.jar
 ecommerce/.mvn/wrapper/maven-wrapper.jar
 .mvn/
+user-service/mvnw.cmd
+user-service/mvnw
